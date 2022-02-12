@@ -1,12 +1,21 @@
-name: laravel tagged release
+name: laravel lib ci dev
 
 on:
-  push:
-    tags:
-      - "v*"
+  workflow_call:
+    secrets:
+      SATIS_URL:
+        required: true
+      SATIS_USERNAME:
+        required: true
+      SATIS_PASSWORD:
+        required: true
+      SLACK_WEBHOOK_URL:
+        required: true
+      FORGE_SATIS_WEBHOOK_URL:
+        required: true
 
 jobs:
-  test:
+  tests:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: true
@@ -66,19 +75,3 @@ jobs:
           status: ${{ job.status }}
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-
-  release:
-    needs: [test]
-    runs-on: windows-latest
-
-    steps:
-      - name: Automatic Releases
-        uses: marvinpinto/action-automatic-releases@v1.1.0
-        env:
-          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
-        with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          prerelease: false
-
-      - name: Trigger SelbySatis build
-        run: Invoke-WebRequest -Uri ${{secrets.FORGE_SATIS_WEBHOOK_URL}} -UseBasicParsing
