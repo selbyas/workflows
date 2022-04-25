@@ -13,6 +13,10 @@ on:
         required: true
       FORGE_SATIS_WEBHOOK_URL:
         required: true
+      SETASIGN_USERNAME:
+        required: false
+      SETASIGN_PASSWORD:
+        required: false
 
 jobs:
   tests:
@@ -47,6 +51,14 @@ jobs:
 
       - name: 'authenticate SelbySatis'
         run: composer config http-basic.${{secrets.SATIS_URL}} "${{secrets.SATIS_USERNAME}}" "${{secrets.SATIS_PASSWORD}}"
+
+
+
+      - name: 'authenticate setasign'
+        env:
+          SETASIGN_USERNAME: ${{ secrets.SETASIGN_USERNAME }}
+        if: "${{ env.SETASIGN_USERNAME != '' }}"
+        run: composer config http-basic.www.setasign.com "${{secrets.SETASIGN_USERNAME}}" "${{secrets.SETASIGN_PASSWORD}}"
 
       - name: Validate composer.json and composer.lock
         run: composer validate
