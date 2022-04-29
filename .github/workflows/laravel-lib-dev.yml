@@ -82,7 +82,7 @@ jobs:
         run: echo '::set-output name=LARAVEL_VERSION::$(echo "$(composer show laravel/framework | grep versions | grep -Eow 'v[0-9]+' | sed 's/v//')"'.*')'
 
       - name: Verify installed Laravel version
-        run: echo 'Installed version: ${{ steps.laravel_version.outputs.LARAVEL_VERSION }} / Expected version: ${{ matrix.laravel }}'
+        run: echo "Installed version ${{ steps.laravel_version.outputs.LARAVEL_VERSION }} / Expected version ${{ matrix.laravel }}"
 
       - name: Fail on incorrect Laravel version
         if: ${{ steps.laravel_version.outputs.LARAVEL_VERSION != matrix.laravel }}
