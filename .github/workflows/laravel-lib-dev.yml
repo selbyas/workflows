@@ -75,7 +75,7 @@ jobs:
       - name: Detect installed Laravel version
         id: laravel_version
         run: |
-          echo '::set-output name=LARAVEL_VERSION::$(echo "$(composer show laravel/framework | grep versions | grep -Eow 'v[0-9]+' | sed 's/v//')"'.*')'
+          echo "::set-output name=LARAVEL_VERSION::$(echo "$(composer show laravel/framework | grep versions | grep -Eow 'v[0-9]+' | sed 's/v//')"'.*')"
           echo "Installed version $(echo "$(composer show laravel/framework | grep versions | grep -Eow 'v[0-9]+' | sed 's/v//')"'.*') / Expected version ${{ matrix.laravel }}"
 
       - name: Fail on incorrect Laravel version
