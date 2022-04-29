@@ -86,7 +86,7 @@ jobs:
 
       - name: Fail on incorrect Laravel version
         if: ${{ steps.laravel_version.outputs.LARAVEL_VERSION != matrix.laravel }}
-        run: echo '::error'
+        run: echo '::error::Incorrect Laravel version installed'
 
       - name: Run test suite
         run: composer run-script test
