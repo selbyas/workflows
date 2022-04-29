@@ -52,7 +52,7 @@ jobs:
       - name: 'Authenticate SelbySatis'
         run: composer config http-basic.${{secrets.SATIS_URL}} "${{secrets.SATIS_USERNAME}}" "${{secrets.SATIS_PASSWORD}}"
 
-      - name: 'Authenticate setasign'
+      - name: 'Authenticate Setasign'
         env:
           SETASIGN_USERNAME: ${{ secrets.SETASIGN_USERNAME }}
         if: "${{ env.SETASIGN_USERNAME != '' }}"

@@ -27,6 +27,11 @@ jobs:
         os: [ ubuntu-latest, windows-latest ]
         php: [ 8.0 ]
         laravel: [ 8.*, 9.* ]
+        include:
+          - laravel: 8.*
+            testbench: ^6.23
+          - laravel: 9.*
+            testbench: ^7.0
 
     name: P${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.os }}
 
@@ -47,7 +52,7 @@ jobs:
       - name: 'Authenticate SelbySatis'
         run: composer config http-basic.${{secrets.SATIS_URL}} "${{secrets.SATIS_USERNAME}}" "${{secrets.SATIS_PASSWORD}}"
 
-      - name: 'Authenticate setasign'
+      - name: 'Authenticate Setasign'
         env:
           SETASIGN_USERNAME: ${{ secrets.SETASIGN_USERNAME }}
         if: "${{ env.SETASIGN_USERNAME != '' }}"
@@ -55,6 +60,15 @@ jobs:
 
       - name: Validate composer.json and composer.lock
         run: composer validate
+
+      - name: Setup Testbench
+        run: composer require "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update --dev
+
+      - name: Setup Laravel
+        run: composer require "laravel/framework:${{ matrix.laravel }}" --no-interaction --no-update
+
+      - name: Install Laravel dependencies
+        run: composer update "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --with-all-dependencies
 
       - name: Cache Composer packages
         id: composer-cache
@@ -65,12 +79,19 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-php${{ matrix.php }}-laravel${{ matrix.laravel }}-
 
-      - name: Install Laravel dependencies
-        run: composer require "laravel/framework:${{ matrix.laravel }}" --no-interaction --with-all-dependencies
-
       - name: Install dependencies
         if: steps.composer-cache.outputs.cache-hit != 'true'
         run: composer install --prefer-dist --no-progress
+
+      - name: Detect installed Laravel version
+        id: laravel_version
+        run: |
+          echo "::set-output name=LARAVEL_VERSION::$(echo "$(echo "$(composer show laravel/framework | grep versions | grep -Eow 'v[0-9]+' | sed 's/v//').*")")"
+          echo "Installed version $(echo "$(echo "$(composer show laravel/framework | grep versions | grep -Eow 'v[0-9]+' | sed 's/v//').*")") / Expected version ${{ matrix.laravel }}"
+
+      - name: Fail on incorrect Laravel version
+        if: steps.laravel_version.outputs.LARAVEL_VERSION != matrix.laravel
+        run: echo '::error::Incorrect Laravel version installed (${{ steps.laravel_version.outputs.LARAVEL_VERSION }})' && exit 1
 
       - name: Run test suite
         run: composer run-script test
