@@ -79,18 +79,13 @@ jobs:
 
       - name: Detect installed Laravel version
         id: laravel_version
-        run: echo '::set-output name=LARAVEL_VERSION::$(echo "$(composer show laravel/framework | grep versions | grep -Eow 'v[0-9]+' | sed 's/v//')"'.*')'
-
-      - name: Verify installed Laravel version
-        run: echo "Installed version ${{ steps.laravel_version.outputs.LARAVEL_VERSION }} / Expected version ${{ matrix.laravel }}"
+        run: |
+          echo '::set-output name=LARAVEL_VERSION::$(echo "$(composer show laravel/framework | grep versions | grep -Eow 'v[0-9]+' | sed 's/v//')"'.*')'
+          echo "Installed version ${{ steps.laravel_version.outputs.LARAVEL_VERSION }} / Expected version ${{ matrix.laravel }}"
 
       - name: Fail on incorrect Laravel version
         if: steps.laravel_version.outputs.LARAVEL_VERSION != matrix.laravel
         run: echo '::error::Incorrect Laravel version installed' && exit 1
-
-      - name: Report correct Laravel version
-        if: steps.laravel_version.outputs.LARAVEL_VERSION == matrix.laravel
-        run: echo 'Correct Laravel version installed'
 
       - name: Run test suite
         run: composer run-script test
