@@ -44,10 +44,10 @@ jobs:
           php-version: ${{ matrix.php }}
           extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo, sqlsrv, pdo_sqlsrv
 
-      - name: 'authenticate SelbySatis'
+      - name: 'Authenticate SelbySatis'
         run: composer config http-basic.${{secrets.SATIS_URL}} "${{secrets.SATIS_USERNAME}}" "${{secrets.SATIS_PASSWORD}}"
 
-      - name: 'authenticate setasign'
+      - name: 'Authenticate setasign'
         env:
           SETASIGN_USERNAME: ${{ secrets.SETASIGN_USERNAME }}
         if: "${{ env.SETASIGN_USERNAME != '' }}"
