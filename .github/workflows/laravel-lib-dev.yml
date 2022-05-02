@@ -71,7 +71,7 @@ jobs:
         run: |
             composer require "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update --dev
             composer require "laravel/framework:${{ matrix.laravel }}" --no-interaction --no-update
-            composer update --no-interaction
+            composer update --prefer-dist --no-interaction
 
       - name: Detect installed Laravel version
         id: laravel_version
