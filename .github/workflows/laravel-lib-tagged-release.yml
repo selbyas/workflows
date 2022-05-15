@@ -1,22 +1,4 @@
-name: laravel tagged release
-
-on:
-  workflow_call:
-    secrets:
-      SATIS_URL:
-        required: true
-      SATIS_USERNAME:
-        required: true
-      SATIS_PASSWORD:
-        required: true
-      SLACK_WEBHOOK_URL:
-        required: true
-      FORGE_SATIS_WEBHOOK_URL:
-        required: true
-      SETASIGN_USERNAME:
-        required: false
-      SETASIGN_PASSWORD:
-        required: false
+name: laravel package tagged release
 
 jobs:
   test:
@@ -36,11 +18,6 @@ jobs:
     name: P${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.os }}
 
     steps:
-      - name: Set git to use LF
-        run: |
-          git config --global core.autocrlf false
-          git config --global core.eol lf
-
       - uses: actions/checkout@v2
 
       - name: Cache dependencies
@@ -53,16 +30,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo, sqlsrv, pdo_sqlsrv
-
-      - name: 'Authenticate SelbySatis'
-        run: composer config http-basic.${{secrets.SATIS_URL}} "${{secrets.SATIS_USERNAME}}" "${{secrets.SATIS_PASSWORD}}"
-
-      - name: 'Authenticate Setasign'
-        env:
-          SETASIGN_USERNAME: ${{ secrets.SETASIGN_USERNAME }}
-        if: "${{ env.SETASIGN_USERNAME != '' }}"
-        run: composer config http-basic.www.setasign.com "${{secrets.SETASIGN_USERNAME}}" "${{secrets.SETASIGN_PASSWORD}}"
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo
 
       - name: Validate composer.json and composer.lock
         run: composer validate
@@ -79,6 +47,12 @@ jobs:
           echo "::set-output name=LARAVEL_VERSION::$(echo "$(echo "$(composer show laravel/framework | grep versions | grep -Eow 'v[0-9]+' | sed 's/v//').*")")"
           echo "Installed version $(echo "$(echo "$(composer show laravel/framework | grep versions | grep -Eow 'v[0-9]+' | sed 's/v//').*")") / Expected version ${{ matrix.laravel }}"
 
+      - name: Detect latest package version
+        id: package_version
+        run: |
+          echo "::set-output name=PACKAGE_VERSION::$(git tag -l --sort=v:refname | tail -1)"
+          echo "Package version $(git tag -l --sort=v:refname | tail -1)"
+
       - name: Fail on incorrect Laravel version
         if: steps.laravel_version.outputs.LARAVEL_VERSION != matrix.laravel
         run: echo '::error::Incorrect Laravel version installed (${{ steps.laravel_version.outputs.LARAVEL_VERSION }})' && exit 1
@@ -86,26 +60,17 @@ jobs:
       - name: Run test suite
         run: composer run-script test
 
-      - name: Send Slack failure notification
-        uses: act10ns/slack@v1.2.2
+      - name: Delete latest package version tag on failure
         if: failure()
-        with:
-          status: ${{ job.status }}
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: git push --delete origin ${{ steps.package_version.outputs.PACKAGE_VERSION }}
 
   release:
     needs: [test]
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: Automatic Releases
-        uses: marvinpinto/action-automatic-releases@v1.1.0
-        env:
-          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
+        uses: marvinpinto/action-automatic-releases@v1.2.2
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: false
-
-      - name: Trigger SelbySatis build
-        run: Invoke-WebRequest -Uri ${{secrets.FORGE_SATIS_WEBHOOK_URL}} -UseBasicParsing
