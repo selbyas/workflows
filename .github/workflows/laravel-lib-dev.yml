@@ -1,4 +1,22 @@
-name: laravel package ci dev
+name: laravel lib ci dev
+
+on:
+  workflow_call:
+    secrets:
+      SATIS_URL:
+        required: true
+      SATIS_USERNAME:
+        required: true
+      SATIS_PASSWORD:
+        required: true
+      SLACK_WEBHOOK_URL:
+        required: true
+      FORGE_SATIS_WEBHOOK_URL:
+        required: true
+      SETASIGN_USERNAME:
+        required: false
+      SETASIGN_PASSWORD:
+        required: false
 
 jobs:
   tests:
@@ -18,6 +36,11 @@ jobs:
     name: P${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.os }}
 
     steps:
+      - name: Set git to use LF
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+
       - uses: actions/checkout@v2
 
       - name: Cache dependencies
@@ -30,7 +53,16 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo, sqlsrv, pdo_sqlsrv
+
+      - name: 'Authenticate SelbySatis'
+        run: composer config http-basic.${{secrets.SATIS_URL}} "${{secrets.SATIS_USERNAME}}" "${{secrets.SATIS_PASSWORD}}"
+
+      - name: 'Authenticate Setasign'
+        env:
+          SETASIGN_USERNAME: ${{ secrets.SETASIGN_USERNAME }}
+        if: "${{ env.SETASIGN_USERNAME != '' }}"
+        run: composer config http-basic.www.setasign.com "${{secrets.SETASIGN_USERNAME}}" "${{secrets.SETASIGN_PASSWORD}}"
 
       - name: Validate composer.json and composer.lock
         run: composer validate
@@ -53,3 +85,11 @@ jobs:
 
       - name: Run test suite
         run: composer run-script test
+
+      - name: Send Slack failure notification
+        uses: act10ns/slack@v1.2.2
+        if: failure()
+        with:
+          status: ${{ job.status }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
