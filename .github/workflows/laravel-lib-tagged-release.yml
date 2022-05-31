@@ -127,4 +127,12 @@ jobs:
           fi
 
       - name: Trigger SelbySatis build
-        run: curl "${{ secrets.FORGE_SATIS_WEBHOOK_URL }}"
+        run: |
+          package=$(echo "${{ github.repository }}" | sed "s/selbyas/selby/g")
+          
+          echo "Trigger build for package $package"
+
+          curl "${{ secrets.FORGE_SATIS_WEBHOOK_URL }}?package=$package"
+
+
+
