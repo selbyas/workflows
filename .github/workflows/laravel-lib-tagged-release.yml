@@ -19,7 +19,7 @@ on:
         required: false
 
 jobs:
-  test:
+  tests:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: true
@@ -95,17 +95,36 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   release:
-    needs: [test]
-    runs-on: windows-latest
+    needs: [tests]
+    runs-on: ubuntu-latest
+
+    # Pushes with GITHUB_TOKEN like these will not trigger any workflows, even if they fit the criteria
+    # Either we need to switch to using a PAT for checkout, or just accept that the RC tests should cover everything, 
+    # and the satis webhook will pick up on the newly promoted prod version anyway.
 
     steps:
-      - name: Automatic Releases
-        uses: marvinpinto/action-automatic-releases@v1.1.0
-        env:
-          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
-        with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          prerelease: false
+      - uses: actions/checkout@v3
+      - name: Promote release candidate if tests pass
+        run: |
+          current="$(git tag -l --sort=v:refname | tail -1)"
+
+          if [[ $current == v*-rc* ]]; then
+            next=$(echo $current | awk '{split($0, items, "-"); n=split(items[1], segments, "."); segments[n]++; for(i in segments) printf segments[i] "."}' | sed "s/\.$//g")
+
+            echo "Promoting $current to $next triggered by $GITHUB_ACTOR"
+
+            git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+            git config user.name "$GITHUB_ACTOR"
+
+            git checkout -b main
+            
+            git commit --allow-empty -m "promote release candidate $current to $next"
+            git tag $next
+            git push -u origin main
+            git push --tags
+          else
+            echo "Current version does not seem to be a release candidate: $current"
+          fi
 
       - name: Trigger SelbySatis build
-        run: Invoke-WebRequest -Uri ${{secrets.FORGE_SATIS_WEBHOOK_URL}} -UseBasicParsing
+        run: curl "${{ secrets.FORGE_SATIS_WEBHOOK_URL }}"
