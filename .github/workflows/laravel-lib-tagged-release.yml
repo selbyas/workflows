@@ -55,7 +55,16 @@ jobs:
           php-version: ${{ matrix.php }}
           extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo, sqlsrv, pdo_sqlsrv
 
+      # We need to double-escape the password string on Windows, since the new token format contains a pipe character
+      # that wasn't playing well with PowerShell. The double quotes are unpacked correctly down the line, so the
+      # resulting config in auth.json is valid
+
+      - name: 'Authenticate SelbySatis (Windows)'
+        if: runner.os == 'Windows'
+        run: composer config http-basic.${{secrets.SATIS_URL}} "${{secrets.SATIS_USERNAME}}" '"${{secrets.SATIS_PASSWORD}}"'
+
       - name: 'Authenticate SelbySatis'
+        if: runner.os != 'Windows'
         run: composer config http-basic.${{secrets.SATIS_URL}} "${{secrets.SATIS_USERNAME}}" "${{secrets.SATIS_PASSWORD}}"
 
       - name: 'Authenticate Setasign'
