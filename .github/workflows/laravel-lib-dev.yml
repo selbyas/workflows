@@ -61,17 +61,17 @@ jobs:
 
       - name: 'Authenticate SelbySatis (Windows)'
         if: runner.os == 'Windows'
-        run: composer config http-basic.${{secrets.SATIS_URL}} "${{secrets.SATIS_USERNAME}}" '"${{secrets.SATIS_PASSWORD}}"'
+        run: composer config --global http-basic.${{secrets.SATIS_URL}} "${{secrets.SATIS_USERNAME}}" '"${{secrets.SATIS_PASSWORD}}"'
 
       - name: 'Authenticate SelbySatis'
         if: runner.os != 'Windows'
-        run: composer config http-basic.${{secrets.SATIS_URL}} "${{secrets.SATIS_USERNAME}}" "${{secrets.SATIS_PASSWORD}}"
+        run: composer config --global http-basic.${{secrets.SATIS_URL}} "${{secrets.SATIS_USERNAME}}" "${{secrets.SATIS_PASSWORD}}"
 
       - name: 'Authenticate Setasign'
         env:
           SETASIGN_USERNAME: ${{ secrets.SETASIGN_USERNAME }}
         if: "${{ env.SETASIGN_USERNAME != '' }}"
-        run: composer config http-basic.www.setasign.com "${{secrets.SETASIGN_USERNAME}}" "${{secrets.SETASIGN_PASSWORD}}"
+        run: composer config --global http-basic.www.setasign.com "${{secrets.SETASIGN_USERNAME}}" "${{secrets.SETASIGN_PASSWORD}}"
 
       - name: Validate composer.json and composer.lock
         run: composer validate
@@ -94,6 +94,23 @@ jobs:
 
       - name: Run test suite
         run: composer run-script test
+
+      - name: Create debug artifact on failure (Windows)
+        if: ${{ failure() && runner.os == 'Windows' }}
+        run: |
+          Compress-Archive -Path .\* -DestinationPath debug.zip
+
+      - name: Create debug artifact on failure
+        if: ${{ failure() && runner.os != 'Windows' }}
+        run: |
+          zip -r debug.zip .
+
+      - name: Upload debug artifact on failure
+        uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: debug
+          path: debug.zip
 
       - name: Send Slack failure notification
         uses: act10ns/slack@v1.2.2
