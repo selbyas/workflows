@@ -36,11 +36,6 @@ jobs:
     name: PHP ${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.os }}
 
     steps:
-      - name: Set git to use LF
-        run: |
-          git config --global core.autocrlf false
-          git config --global core.eol lf
-
       - uses: actions/checkout@v2
 
       - name: Cache dependencies
