@@ -66,8 +66,8 @@ jobs:
         if: "${{ env.SETASIGN_USERNAME != '' }}"
         run: composer config http-basic.www.setasign.com "${{secrets.SETASIGN_USERNAME}}" "${{secrets.SETASIGN_PASSWORD}}"
 
-      - name: Install poppler-utils
-        run: sudo apt-get install -y poppler-utils
+      - name: Install OS dependencies
+        run: sudo apt-get update && sudo apt-get install -y poppler-utils chromium-browser imagemagick
 
       - name: Install npm packages
         run: npm install
