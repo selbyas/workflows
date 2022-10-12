@@ -69,6 +69,9 @@ jobs:
       - name: Install poppler-utils
         run: sudo apt-get install -y poppler-utils
 
+      - name: Install npm packages
+        run: npm install
+
       - name: Validate composer.json and composer.lock
         run: composer validate
 
