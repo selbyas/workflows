@@ -46,7 +46,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo, sqlsrv, pdo_sqlsrv
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, fileinfo, sqlsrv, pdo_sqlsrv
 
       # We need to double-escape the password string on Windows, since the new token format contains a pipe character
       # that wasn't playing well with PowerShell. The double quotes are unpacked correctly down the line, so the
@@ -67,7 +67,7 @@ jobs:
         run: composer config --global http-basic.www.setasign.com "${{secrets.SETASIGN_USERNAME}}" "${{secrets.SETASIGN_PASSWORD}}"
 
       - name: Install OS dependencies
-        run: sudo apt-get update && sudo apt-get install -y poppler-utils chromium-browser imagemagick
+        run: sudo apt-get update && sudo apt-get install -y poppler-utils chromium-browser
 
       - name: Install npm packages
         run: npm install
