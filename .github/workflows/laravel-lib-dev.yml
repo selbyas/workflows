@@ -59,8 +59,11 @@ jobs:
 
       - name: Install PDF tools
         run: |
-          sudo apt-get update && sudo apt-get install -y poppler-utils chromium-browser nodejs gconf-service libasound2 libatk1.0-0 libc6 libcairo2 libcups2 libdbus-1-3 libexpat1 libfontconfig1 libgbm1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 ca-certificates fonts-liberation libappindicator1 libnss3 lsb-release xdg-utils wget libgbm-dev libxshmfence-dev
+          sudo apt-get update
+          sudo apt-get install -y poppler-utils chromium-browser nodejs gconf-service libasound2 libatk1.0-0 libc6 libcairo2 libcups2 libdbus-1-3 libexpat1 libfontconfig1 libgbm1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 ca-certificates fonts-liberation libappindicator1 libnss3 lsb-release xdg-utils wget libgbm-dev libxshmfence-dev
+          sudo apt-get install -y fontconfig fonts-droid-fallback fonts-noto-mono fonts-urw-base35 ghostscript gsfonts hicolor-icon-theme imagemagick imagemagick-6-common imagemagick-6.q16 libavahi-client3 libavahi-common-data libavahi-common3 libcairo2 libcups2 libdatrie1 libdjvulibre-text libdjvulibre21 libfftw3-double3 libgraphite2-3 libgs9 libgs9-common libharfbuzz0b libidn11 libijs-0.35 libilmbase24 libjbig2dec0 liblcms2-2 liblqr-1-0 libmagickcore-6.q16-6 libmagickcore-6.q16-6-extra libmagickwand-6.q16-6 libnetpbm10 libopenexr24 libopenjp2-7 libpango-1.0-0 libpangocairo-1.0-0 libpangoft2-1.0-0 libpaper-utils libpaper1 libpixman-1-0 libthai-data libthai0 libwebpmux3 libwmf0.2-7 libxcb-render0 libxcb-shm0 libxrender1 netpbm poppler-data
           sudo npm install --location=global --unsafe-perm puppeteer
+          identify -list format
 
       - name: Validate composer.json and composer.lock
         run: composer validate
