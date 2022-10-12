@@ -66,6 +66,9 @@ jobs:
         if: "${{ env.SETASIGN_USERNAME != '' }}"
         run: composer config --global http-basic.www.setasign.com "${{secrets.SETASIGN_USERNAME}}" "${{secrets.SETASIGN_PASSWORD}}"
 
+      - name: Install poppler-utils
+        run: sudo apt-get install -y poppler-utils
+
       - name: Validate composer.json and composer.lock
         run: composer validate
 
