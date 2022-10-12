@@ -34,10 +34,10 @@ jobs:
     name: PHP ${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Cache dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.composer/cache/files
           key: dependencies-laravel-${{ runner.os }}-${{ matrix.laravel }}-testbench-${{ matrix.testbench }}-php-${{ matrix.php }}-composer-${{ hashFiles('composer.json') }}
